@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"fractals/mandelbrot/calc"
 	"image"
 	"image/color"
 	"image/png"
@@ -16,6 +17,8 @@ var height int
 func main() {
 	initImg()
 	save()
+	calc.Diverges()
+	fmt.Println(translate(50, 50))
 }
 
 func initImg() {
@@ -44,7 +47,7 @@ func setPixels(fn func(x, y int) color.Color) {
 func translate(x, y int) complex128 {
 	return complex(
 		float64(x)/float64(width)*2-1,
-		float64(y)/float64(height)*2-1,
+		(float64(y)/float64(height)*2-1)*-1,
 	)
 }
 
