@@ -3,18 +3,22 @@ package progressbar
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type Bar struct {
 	total int    // total value for progress
 	per   int    // current in percentage
 	bar   string // the actual progress bar to be printed
+	start time.Time
 }
 
 func New(total int) *Bar {
+	start := time.Now()
 	return &Bar{
 		total: total,
 		bar:   strings.Repeat("-", 100),
+		start: start,
 	}
 }
 
@@ -30,6 +34,7 @@ func (b *Bar) Update(newCur int) {
 	fmt.Printf("\r[%v/100] %v", b.per, b.bar)
 
 	if b.per == 100 {
-		fmt.Println("\nDone!")
+		elapsed := time.Since(b.start)
+		fmt.Printf("\nDone after %s!\n", elapsed)
 	}
 }
