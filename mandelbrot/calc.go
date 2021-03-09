@@ -1,14 +1,14 @@
-package calc
+package main
 
 import "math/cmplx"
 
-var maxIt int = 100
+var maxIt int = 500
 
-func Diverges(c complex128) bool {
+func diverges(c complex128) bool {
 	z := complex128(0)
 
 	for i := 0; i < maxIt; i++ {
-		z = cmplx.Sqrt(z) + c
+		z = z*z + c
 		if cmplx.Abs(z) > 2 {
 			return true
 		}

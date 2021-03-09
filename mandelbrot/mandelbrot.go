@@ -1,53 +1,63 @@
 package main
 
 import (
-	"fmt"
-	"fractals/mandelbrot/calc"
 	"image"
 	"image/color"
 	"image/png"
 	"os"
 	"strconv"
+
+	"fractals/progressbar"
 )
 
 var img *image.RGBA
 var width int
 var height int
 
+var xMax int = 1
+var xMin int = -2
+var yMax int = 1
+var yMin int = -1
+
 func main() {
 	initImg()
+	draw()
 	save()
-	calc.Diverges()
-	fmt.Println(translate(50, 50))
 }
 
 func initImg() {
 	args := os.Args[1:]
-	fmt.Println(args)
-
 	width, _ = strconv.Atoi(args[0])
-	height, _ = strconv.Atoi(args[1])
+	height = width * 2 / 3
 
 	rect := image.Rect(0, 0, width, height)
 	img = image.NewRGBA(rect)
-
-	setPixels(func(x, y int) color.Color {
-		return color.RGBA{0, 0, 0, 255}
-	})
 }
 
 func setPixels(fn func(x, y int) color.Color) {
+	bar := progressbar.New(height)
 	for y := 0; y < height; y++ {
-		for x := 0; x < height; x++ {
+		// fmt.Printf("%.f/%v\r", float64(y)/float64(height)*100, 100)
+		bar.Update(y)
+		for x := 0; x < width; x++ {
 			img.Set(x, y, fn(x, y))
 		}
 	}
 }
 
+func draw() {
+	setPixels(func(x, y int) color.Color {
+		if diverges(translate(x, y)) {
+			return color.RGBA{255, 255, 255, 255}
+		}
+		return color.RGBA{0, 0, 0, 255}
+	})
+}
+
 func translate(x, y int) complex128 {
 	return complex(
-		float64(x)/float64(width)*2-1,
-		(float64(y)/float64(height)*2-1)*-1,
+		float64(x)/float64(width)*float64((xMax-xMin))+float64(xMin),
+		(float64(y)/float64(height)*float64(yMax-yMin)+float64(yMin))*-1,
 	)
 }
 
