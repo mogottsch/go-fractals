@@ -5,15 +5,19 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
 
 var img *safeImage
 var width int
+var width2 int
 var height int
+var nThreads int
 
 var xMax float64 = 1
 var xMin float64 = -2
@@ -34,15 +38,50 @@ func (img *safeImage) setPixel(x, y int, c color.Color) {
 }
 
 func main() {
+	configure()
 	initImg()
 	measureTime(drawPartially)
 	save()
 }
 
-func initImg() {
+func configure() {
 	args := os.Args[1:]
-	width, _ = strconv.Atoi(args[0])
-	height = width * 2 / 3
+	for _, arg := range args {
+		argArr := strings.Split(strings.Replace(arg, "--", "", 1), "=")
+		switch argArr[0] {
+		case "height":
+			height, _ = strconv.Atoi(argArr[1])
+		case "width":
+			width, _ = strconv.Atoi(argArr[1])
+
+		case "nThreads":
+			nThreads, _ = strconv.Atoi(argArr[1])
+			fmt.Println(nThreads)
+		default:
+			panic("Unknown arguement " + arg)
+		}
+	}
+
+	// defaults
+	if height == 0 {
+		height = 1000
+	}
+	if nThreads == 0 {
+		nThreads = 1024
+	}
+	if height == 0 && width == 0 {
+		height = 1000
+	}
+	if height == 0 && width != 0 {
+		height = width * 2 / 3
+	}
+	if width == 0 {
+		width = height * 3 / 2
+	}
+}
+
+func initImg() {
+	width = height * 3 / 2
 
 	rect := image.Rect(0, 0, width, height)
 	nImg := image.NewRGBA(rect)
@@ -78,7 +117,7 @@ func getPixelColor(x, y int) color.Color {
 }
 
 func drawPartially() {
-	n := 8
+	n := int(math.Sqrt(float64(nThreads)))
 	c := 0
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
