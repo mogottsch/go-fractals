@@ -32,7 +32,7 @@ func (img *safeImage) setPixel(x, y int, c color.Color) {
 func main() {
 	conf = createConfig()
 	img = createImg()
-	// go regularSave()
+	go regularSave()
 	measureTime(drawPartially)
 	save()
 	fmt.Printf("%v/%v, %v%%", skipped, conf.width*conf.height, skipped/conf.width*conf.height)
@@ -47,8 +47,10 @@ func setPixelsPartially(yL, yH, xL, xH int) {
 }
 
 func getPixelColor(x, y int) color.Color {
-	if diverges(translate(x, y)) {
-		return color.RGBA{255, 255, 255, 255}
+	diverged, it := diverges(translate(x, y))
+	if diverged {
+		col := uint8(math.Sqrt(float64(it)/float64(conf.maxIt)) * 255)
+		return color.RGBA{col, col, col, 255}
 	}
 	return color.RGBA{0, 0, 0, 255}
 }
@@ -112,7 +114,7 @@ func measureTime(fn func()) {
 
 func regularSave() {
 	for !done {
-		time.Sleep(3 * time.Second)
+		time.Sleep(10 * time.Second)
 		save()
 	}
 }

@@ -42,7 +42,7 @@ func (a *complexBig) abs() (z *big.Float) {
 	return r.Sqrt(r)
 }
 
-func diverges(c *complexBig) bool {
+func diverges(c *complexBig) (bool, int) {
 	z := &complexBig{big.NewFloat(0), big.NewFloat(0)}
 	previous := make([]*complexBig, 0, conf.maxIt)
 
@@ -52,7 +52,7 @@ func diverges(c *complexBig) bool {
 			for _, p := range previous {
 				if p.equals(z) {
 					skipped++
-					return false
+					return false, i
 				}
 			}
 		}
@@ -65,8 +65,8 @@ func diverges(c *complexBig) bool {
 
 		// if |z| > 2
 		if z.abs().Cmp(two) == 1 {
-			return true
+			return true, i
 		}
 	}
-	return false
+	return false, conf.maxIt
 }
