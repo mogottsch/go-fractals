@@ -58,3 +58,19 @@ func TestAbs(t *testing.T) {
 		t.Fatalf("expected sqrt(13), got %v", a.i)
 	}
 }
+
+func TestEquals(t *testing.T) {
+	a := &complexBig{big.NewFloat(5), big.NewFloat(12)}
+	b := &complexBig{big.NewFloat(5), big.NewFloat(12)}
+
+	if !a.equals(b) {
+		t.Fatalf("expected equality")
+	}
+	a = &complexBig{big.NewFloat(5), big.NewFloat(13)}
+	b = &complexBig{big.NewFloat(5), big.NewFloat(12)}
+
+	if a.equals(b) {
+		t.Fatalf("expected not equal")
+	}
+
+}

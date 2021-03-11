@@ -18,6 +18,7 @@ type config struct {
 	yMin     *big.Float
 	yDelta   *big.Float
 	maxIt    int
+	skip     bool
 	prec     int
 	nThreads int
 }
@@ -31,6 +32,7 @@ func createConfig() *config {
 		yMax:     big.NewFloat(1.0),
 		yMin:     big.NewFloat(-1.0),
 		maxIt:    100,
+		skip:     false,
 		prec:     53,
 		nThreads: 1024,
 	}
@@ -59,6 +61,8 @@ func createConfig() *config {
 			newConf.nThreads, _ = strconv.Atoi(argArr[1])
 		case "maxIt":
 			newConf.maxIt, _ = strconv.Atoi(argArr[1])
+		case "skip":
+			newConf.skip = true
 		default:
 			panic("Unknown arguement " + arg)
 		}

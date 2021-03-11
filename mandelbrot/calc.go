@@ -5,6 +5,7 @@ import (
 )
 
 var two *big.Float = big.NewFloat(2)
+var skipped int
 
 type complexBig struct {
 	r *big.Float
@@ -28,6 +29,10 @@ func (a *complexBig) add(b *complexBig) (z *complexBig) {
 	return a
 }
 
+func (a *complexBig) equals(b *complexBig) (isEqual bool) {
+	return a.r.Cmp(b.r) == 0 && a.i.Cmp(b.i) == 0
+}
+
 func (a *complexBig) abs() (z *big.Float) {
 	r := new(big.Float).Mul(a.r, a.r)
 	i := new(big.Float).Mul(a.i, a.i)
@@ -39,8 +44,21 @@ func (a *complexBig) abs() (z *big.Float) {
 
 func diverges(c *complexBig) bool {
 	z := &complexBig{big.NewFloat(0), big.NewFloat(0)}
+	previous := make([]*complexBig, 0, conf.maxIt)
 
 	for i := 0; i < conf.maxIt; i++ {
+		// detect loop <=> does not diverge
+		if conf.skip {
+			for _, p := range previous {
+				if p.equals(z) {
+					skipped++
+					return false
+				}
+			}
+		}
+		if conf.skip {
+			previous = append(previous, z)
+		}
 		// z = z*z + c
 		z = mul(z, z)
 		z.add(c)

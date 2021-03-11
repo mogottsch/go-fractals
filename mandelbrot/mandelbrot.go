@@ -32,9 +32,10 @@ func (img *safeImage) setPixel(x, y int, c color.Color) {
 func main() {
 	conf = createConfig()
 	img = createImg()
-	go regularSave()
+	// go regularSave()
 	measureTime(drawPartially)
 	save()
+	fmt.Printf("%v/%v, %v%%", skipped, conf.width*conf.height, skipped/conf.width*conf.height)
 }
 
 func setPixelsPartially(yL, yH, xL, xH int) {
