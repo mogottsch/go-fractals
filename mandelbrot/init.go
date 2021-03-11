@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
@@ -10,10 +11,14 @@ import (
 type config struct {
 	width    int
 	height   int
-	xMax     float64
-	xMin     float64
-	yMax     float64
-	yMin     float64
+	xMax     *big.Float
+	xMin     *big.Float
+	xDelta   *big.Float
+	yMax     *big.Float
+	yMin     *big.Float
+	yDelta   *big.Float
+	maxIt    int
+	prec     int
 	nThreads int
 }
 
@@ -21,10 +26,12 @@ func createConfig() *config {
 	newConf := &config{
 		width:    1500,
 		height:   1000,
-		xMax:     1,
-		xMin:     -2,
-		yMax:     1,
-		yMin:     -1,
+		xMax:     big.NewFloat(1.0),
+		xMin:     big.NewFloat(-2.0),
+		yMax:     big.NewFloat(1.0),
+		yMin:     big.NewFloat(-1.0),
+		maxIt:    100,
+		prec:     53,
 		nThreads: 1024,
 	}
 
@@ -33,23 +40,32 @@ func createConfig() *config {
 		argArr := strings.Split(strings.Replace(arg, "--", "", 1), "=")
 		switch argArr[0] {
 		case "width":
-			conf.width, _ = strconv.Atoi(argArr[1])
+			newConf.width, _ = strconv.Atoi(argArr[1])
 		case "height":
-			conf.height, _ = strconv.Atoi(argArr[1])
+			newConf.height, _ = strconv.Atoi(argArr[1])
 		case "xMax":
-			conf.xMax, _ = strconv.ParseFloat(argArr[1], 64)
+			float, _ := strconv.ParseFloat(argArr[1], 64)
+			newConf.xMax = big.NewFloat(float)
 		case "xMin":
-			conf.xMin, _ = strconv.ParseFloat(argArr[1], 64)
+			float, _ := strconv.ParseFloat(argArr[1], 64)
+			newConf.xMin = big.NewFloat(float)
 		case "yMax":
-			conf.yMax, _ = strconv.ParseFloat(argArr[1], 64)
+			float, _ := strconv.ParseFloat(argArr[1], 64)
+			newConf.yMax = big.NewFloat(float)
 		case "yMin":
-			conf.yMin, _ = strconv.ParseFloat(argArr[1], 64)
+			float, _ := strconv.ParseFloat(argArr[1], 64)
+			newConf.yMin = big.NewFloat(float)
 		case "nThreads":
-			conf.nThreads, _ = strconv.Atoi(argArr[1])
+			newConf.nThreads, _ = strconv.Atoi(argArr[1])
+		case "maxIt":
+			newConf.maxIt, _ = strconv.Atoi(argArr[1])
 		default:
 			panic("Unknown arguement " + arg)
 		}
 	}
+
+	newConf.xDelta = new(big.Float).Sub(newConf.xMax, newConf.xMin)
+	newConf.yDelta = new(big.Float).Sub(newConf.yMax, newConf.yMin)
 	return newConf
 }
 

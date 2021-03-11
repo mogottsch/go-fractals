@@ -6,6 +6,7 @@ import (
 	"image/color"
 	"image/png"
 	"math"
+	"math/big"
 	"os"
 	"sync"
 	"time"
@@ -15,6 +16,7 @@ var img *safeImage
 var conf *config
 
 var wg sync.WaitGroup
+var done bool = false
 
 type safeImage struct {
 	img *image.RGBA
@@ -30,6 +32,7 @@ func (img *safeImage) setPixel(x, y int, c color.Color) {
 func main() {
 	conf = createConfig()
 	img = createImg()
+	go regularSave()
 	measureTime(drawPartially)
 	save()
 }
@@ -80,14 +83,23 @@ func drawPartially() {
 		}
 	}
 	wg.Wait()
+	done = true
 	fmt.Printf("n threads: %v \n", c)
 }
 
-func translate(x, y int) complex128 {
-	return complex(
-		float64(x)/float64(conf.width)*(conf.xMax-conf.xMin)+conf.xMin,
-		(float64(y)/float64(conf.height)*(conf.yMax-conf.yMin)+conf.yMin)*-1,
-	)
+func translate(x, y int) *complexBig {
+
+	// x/width*(xMax-xMin)+xMin
+	r := big.NewFloat(float64(x) / float64(conf.width))
+	r = r.Mul(r, conf.xDelta)
+	r = r.Add(r, conf.xMin)
+
+	// y/height*(yMax-yMin)+xMin
+	i := big.NewFloat(float64(y) / float64(conf.height))
+	i = i.Mul(i, conf.yDelta)
+	i = i.Add(i, conf.yMin)
+
+	return &complexBig{r, i}
 }
 
 func measureTime(fn func()) {
@@ -95,6 +107,13 @@ func measureTime(fn func()) {
 	fn()
 	elapsed := time.Since(start)
 	fmt.Printf("%s\n", elapsed)
+}
+
+func regularSave() {
+	for !done {
+		time.Sleep(3 * time.Second)
+		save()
+	}
 }
 
 func save() {
