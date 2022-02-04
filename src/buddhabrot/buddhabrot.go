@@ -39,6 +39,7 @@ var (
 	maxThreads int
 	endless    bool
 	warmStart  bool
+	gridSize   int = 500
 )
 
 // const width int = 7205 * 2
@@ -88,6 +89,7 @@ func init() {
 	flag.IntVar(&maxThreads, "maxThreads", 4, "maximum number of threads")
 	flag.BoolVar(&endless, "endless", false, "endless mode, nCycles is ignored")
 	flag.BoolVar(&warmStart, "warmStart", false, "warm start, load density and max from files")
+	flag.IntVar(&gridSize, "gridSize", 500, "size of the grid that is used for border detection")
 
 	flag.Parse()
 }
@@ -98,7 +100,7 @@ func main() {
 	initDensityArray()
 
 	start = time.Now()
-	grid = optimizations.NewGrid(500, maxIt, maxThreads)
+	grid = optimizations.NewGrid(gridSize, maxIt, maxThreads)
 	fmt.Printf("Grid created in %s\n", time.Since(start))
 
 	go renderPeriodically(2)
@@ -247,6 +249,10 @@ func runCycle() {
 	numbers := generateNumbers()
 	numbers = filterNumbers(numbers)
 	trajectories := iteratePoints(numbers)
+
+	mirroredTrajectories := mirrorPoints(trajectories)
+	trajectories = append(trajectories, mirroredTrajectories...)
+
 	pixels := translatePoints(trajectories)
 
 	nFoundPoints.Add(int64(len(pixels)))
@@ -294,6 +300,15 @@ func iteratePoints(numbers []*complexbig.ComplexBig) []*complexbig.ComplexBig {
 		trajectories = append(trajectories, trajectoryPoints...)
 	}
 	return trajectories
+}
+
+func mirrorPoints(points []*complexbig.ComplexBig) []*complexbig.ComplexBig {
+	mirroredPoints := make([]*complexbig.ComplexBig, 0)
+	for _, z := range points {
+		mirrored := z.MirrorImaginary()
+		mirroredPoints = append(mirroredPoints, mirrored)
+	}
+	return mirroredPoints
 }
 
 func generateRandom(size int, offset *big.Float) *big.Float {

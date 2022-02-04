@@ -49,3 +49,10 @@ func (a *ComplexBig) Abs() (z *big.Float) {
 func (z *ComplexBig) String() string {
 	return z.R.String() + "+" + z.I.String() + "i"
 }
+func (a *ComplexBig) Copy() *ComplexBig {
+	return &ComplexBig{R: new(big.Float).Set(a.R), I: new(big.Float).Set(a.I)}
+}
+
+func (z *ComplexBig) MirrorImaginary() *ComplexBig {
+	return &ComplexBig{R: new(big.Float).Copy(z.R), I: new(big.Float).Neg(z.I)}
+}
