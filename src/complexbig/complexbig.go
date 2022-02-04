@@ -2,6 +2,10 @@ package complexbig
 
 import "math/big"
 
+var Zero *big.Float = big.NewFloat(0)
+var One *big.Float = big.NewFloat(1)
+var Two *big.Float = big.NewFloat(2)
+
 // ComplexBig are complex numbers represented by big float
 type ComplexBig struct {
 	R *big.Float
@@ -40,4 +44,8 @@ func (a *ComplexBig) Abs() (z *big.Float) {
 	r.Add(r, i)
 
 	return r.Sqrt(r)
+}
+
+func (z *ComplexBig) String() string {
+	return z.R.String() + "+" + z.I.String() + "i"
 }
